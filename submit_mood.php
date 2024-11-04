@@ -76,8 +76,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .form-control-lg {
             font-size: 1.25rem;
         }
-
-        /* Smooth transition for the entire form */
         form {
             opacity: 0;
             transform: translateY(20px);

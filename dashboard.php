@@ -274,6 +274,66 @@ $total_pages = ceil($total_records / $records_per_page);
 </html>
 
 <?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Database connection details
+$host = 'localhost';
+$username = 'root';
+$password = '';
+$database = 'mood_tracker';
+
+// Connect to the database
+$conn = new mysqli($host, $username, $password, $database);
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$user_id = $_SESSION['user_id'];
+
+// Fetch moods for the logged-in user
+$sql = "SELECT mood, created_at FROM moods WHERE user_id = ? ORDER BY created_at DESC";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Dashboard</title>
+    <!-- Add your dynamic CSS and styling here -->
+</head>
+<body>
+    <h1>Welcome, User <?php echo $user_id; ?></h1>
+    <table>
+        <tr>
+            <th>Mood</th>
+            <th>Date</th>
+        </tr>
+        <?php while ($row = $result->fetch_assoc()): ?>
+            <tr>
+                <td><?php echo htmlspecialchars($row['mood']); ?></td>
+                <td><?php echo $row['created_at']; ?></td>
+            </tr>
+        <?php endwhile; ?>
+    </table>
+</body>
+</html>
+
+<?php
+$stmt->close();
+$conn->close();
+?>
+
+
+<?php
 // Close the database connection
 $conn->close();
 ?>
