@@ -12,16 +12,19 @@ if ($conn->connect_error) {
 }
 
 // Handle registration form submission
+$registrationMessage = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = $_POST['username'];
     $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
     $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
     $stmt->bind_param("ss", $username, $password);
-    $stmt->execute();
+    if ($stmt->execute()) {
+        $registrationMessage = "Registration successful. You can now <a href='login.php'>log in</a>.";
+    } else {
+        $registrationMessage = "Error: Could not register. Please try again.";
+    }
     $stmt->close();
-
-    echo "Registration successful. You can now <a href='login.php'>log in</a>.";
 }
 ?>
 
@@ -35,11 +38,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- Custom CSS -->
     <style>
         body {
-            background-color: #f8f9fa;
+            background: linear-gradient(135deg, #81c784, #64b5f6);
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100vh;
+            margin: 0;
         }
         .card {
             width: 100%;
@@ -48,21 +52,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        .card-header, .card-body {
-            border-radius: 8px;
+        .card-header {
+            background-color: #42a5f5;
+            color: #ffffff;
+            text-align: center;
         }
         .btn-primary {
             width: 100%;
+            border-radius: 20px;
+        }
+        .message {
+            font-size: 0.9em;
+            color: #333;
+            padding-top: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card mt-5">
-            <div class="card-header text-center bg-primary text-white">
+            <div class="card-header">
                 <h3>Register</h3>
             </div>
             <div class="card-body">
+                <?php if ($registrationMessage): ?>
+                    <div class="alert alert-info text-center"><?= $registrationMessage ?></div>
+                <?php endif; ?>
+                
                 <form method="POST" action="register.php">
                     <div class="form-group">
                         <label for="username">Username:</label>
