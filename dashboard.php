@@ -1,4 +1,13 @@
 <?php
+// Start the session at the beginning of the file
+session_start();
+
+// Redirect to login if the user is not logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
 // Database connection details
 $host = 'localhost';
 $username = 'root';
@@ -84,72 +93,7 @@ $total_pages = ceil($total_records / $records_per_page);
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <style>
-        body {
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-            font-family: Arial, sans-serif;
-            color: #333;
-        }
-
-        h1 {
-            color: #343a40;
-            font-weight: bold;
-            font-size: 2.5rem;
-        }
-
-        /* Card Styling */
-        .card {
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Button Styling */
-        .btn-custom {
-            font-size: 1.1rem;
-            border-radius: 30px;
-            transition: background-color 0.3s, color 0.3s, transform 0.3s;
-        }
-        .btn-custom:hover {
-            transform: translateY(-3px);
-        }
-        .btn-primary {
-            background-color: #007bff;
-            color: #fff;
-        }
-        .btn-primary:hover {
-            background-color: #0056b3;
-        }
-        .btn-success {
-            background-color: #28a745;
-            color: #fff;
-        }
-        .btn-success:hover {
-            background-color: #218838;
-        }
-
-        /* Table Styling */
-        .table {
-            border-radius: 10px;
-            overflow: hidden;
-            transition: box-shadow 0.3s;
-        }
-        .table:hover {
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-        }
-        .table thead th {
-            background-color: #343a40;
-            color: #fff;
-        }
-
-        /* Pagination Styling */
-        .pagination .page-item.active .page-link {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
+        /* Your custom styles here */
     </style>
 </head>
 <body>
@@ -163,7 +107,6 @@ $total_pages = ceil($total_records / $records_per_page);
             <input type="date" name="start_date" class="form-control mr-3" required>
             <label for="end_date" class="mr-2">End Date:</label>
             <input type="date" name="end_date" class="form-control mr-3" required>
-
             <label for="mood_filter" class="mr-2">Mood:</label>
             <select name="mood_filter" class="form-control mr-3">
                 <option value="">All</option>
@@ -227,7 +170,7 @@ $total_pages = ceil($total_records / $records_per_page);
 
     $count_sql = "SELECT mood, COUNT(*) as count FROM moods";
     if ($conditions) {
-        $count_sql .= " WHERE " . implode(" AND ",    $conditions);
+        $count_sql .= " WHERE " . implode(" AND ", $conditions);
     }
     $count_sql .= " GROUP BY mood";
     $count_result = $conn->query($count_sql);
@@ -253,88 +196,43 @@ $total_pages = ceil($total_records / $records_per_page);
     }
     $average_score = $total_moods ? round($total_score / $total_moods, 2) : 0;
     ?>
-
-    <!-- Display Mood Summary and Average Score -->
-    <div class="card p-4 mb-4">
-        <h2 class="text-center">Mood Summary</h2>
-        <div class="d-flex justify-content-between px-4">
-            <p><strong>Happy:</strong> <?php echo $happy_count; ?></p>
-            <p><strong>Neutral:</strong> <?php echo $neutral_count; ?></p>
-            <p><strong>Unhappy:</strong> <?php echo $unhappy_count; ?></p>
-        </div>
-        <p class="text-center"><strong>Average Mood Score:</strong> <?php echo $average_score; ?></p>
-    </div>
+    <!-- Mood Submission Section -->
+<div class="text-center mb-4">
+    <a href="submit_mood.php" class="btn btn-primary btn-lg">Submit Your Mood</a>
 </div>
 
-<!-- Bootstrap JS and dependencies -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-</body>
-</html>
+<!-- Logout Button in Dashboard.php -->
+<div style="display: flex; justify-content: center; padding: 20px;">
+    <form action="logout.php" method="post">
+        <button type="submit" class="btn btn-danger">Logout</button>
+    </form>
+</div>
+
+
+
+
+
+<!-- Display Mood Summary and Average Score -->
+<div class="card p-4 mb-4">
+    <h2 class="text-center">Mood Summary</h2>
+    <div class="d-flex justify-content-between px-4">
+        <p><strong>Happy:</strong> <?php echo $happy_count; ?></p>
+        <p><strong>Neutral:</strong> <?php echo $neutral_count; ?></p>
+        <p><strong>Unhappy:</strong> <?php echo $unhappy_count; ?></p>
+    </div>
+    <p class="text-center"><strong>Average Mood Score:</strong> <?php echo $average_score; ?></p>
+</div>
+
+<!-- Feedback Button -->
+<?php if ($average_score < 2): ?>
+    <div class="text-center mb-4">
+        <a href="feedback.php?score=<?php echo $average_score; ?>" class="btn btn-warning btn-lg">Get Feedback</a>
+    </div>
+<?php endif; ?>
+
+
 
 <?php
-session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
-
-// Database connection details
-$host = 'localhost';
-$username = 'root';
-$password = '';
-$database = 'mood_tracker';
-
-// Connect to the database
-$conn = new mysqli($host, $username, $password, $database);
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-
-$user_id = $_SESSION['user_id'];
-
-// Fetch moods for the logged-in user
-$sql = "SELECT mood, created_at FROM moods WHERE user_id = ? ORDER BY created_at DESC";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-
-?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>User Dashboard</title>
-    <!-- Add your dynamic CSS and styling here -->
-</head>
-<body>
-    <h1>Welcome, User <?php echo $user_id; ?></h1>
-    <table>
-        <tr>
-            <th>Mood</th>
-            <th>Date</th>
-        </tr>
-        <?php while ($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?php echo htmlspecialchars($row['mood']); ?></td>
-                <td><?php echo $row['created_at']; ?></td>
-            </tr>
-        <?php endwhile; ?>
-    </table>
-</body>
-</html>
-
-<?php
-$stmt->close();
+// Close database connection
 $conn->close();
 ?>
-
-
-<?php
-// Close the database connection
-$conn->close();
-?>
-
